@@ -503,88 +503,75 @@ $("#add_lang").click(function (e) {
 
 //  **********    **********    Country, state and city API   **********    **********
 
-let auth_token;
-$('#country').click(function () {
-  getCountries();
-  $('#country').unbind('click');
-})
+const GEO_USERNAME = "koushik_teja"; // Replace with your Geonames username
 
-$(document).ready(function () {
-  $.ajax({
-    type: 'get',
-    url: 'https://www.universal-tutorial.com/api/getaccesstoken',
-    success: function (data) {
-      auth_token = data.auth_token;
-    },
-    error: function (error) {
-      console.log(error);
-    },
-    headers: {
-      "Accept": "application/json",
-      "api-token": "QFZCxL-P9DDVZzxIYTti85dbkTb-RZYqW4fG39dTvmeLJ9TCRmVj-UQSruPENKH3MCw",
-      "user-email": "murtazamister1@gmail.com"
+async function getCountries() {
+    try {
+        const response = await fetch(`http://api.geonames.org/countryInfoJSON?username=${GEO_USERNAME}`);
+        const data = await response.json();
+        
+        let countrySelect = document.getElementById("country");
+        countrySelect.innerHTML = '<option value="">Select Country</option>';
+        
+        data.geonames.forEach(country => {
+            let option = document.createElement("option");
+            option.value = country.geonameId; // Use geonameId instead of countryCode
+            option.textContent = country.countryName;
+            countrySelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error fetching countries:", error);
     }
-  })
-})
-function getCountries() {
-  $.ajax({
-    type: 'get',
-    url: 'https://www.universal-tutorial.com/api/countries',
-    success: function (data) {
-      $('#country').empty();
-      data.forEach((ele) => {
-        $('#country').append(`<option value="${ele.country_name}">${ele.country_name}</option>`);
-      })
-      getStates();
-    },
-    error: function (error) {
-      console.log(error);
-    },
-    headers: {
-      "Authorization": "Bearer " + auth_token,
-      "Accept": "application/json"
-    }
-  })
 }
-function getStates() {
-  $.ajax({
-    type: 'get',
-    url: 'https://www.universal-tutorial.com/api/states/' + $('#country').val(),
-    success: function (data) {
-      $('#state').empty();
-      data.forEach((ele) => {
-        $('#state').append(`<option value="${ele.state_name}">${ele.state_name}</option>`);
-      })
-      getCities();
-    },
-    error: function (error) {
-      console.log(error);
-    },
-    headers: {
-      "Authorization": "Bearer " + auth_token,
-      "Accept": "application/json"
+
+async function getStates() {
+    let countryGeonameId = document.getElementById("country").value;
+    if (!countryGeonameId) return;
+
+    try {
+        const response = await fetch(`http://api.geonames.org/childrenJSON?geonameId=${countryGeonameId}&username=${GEO_USERNAME}`);
+        const data = await response.json();
+        
+        let stateSelect = document.getElementById("state");
+        stateSelect.innerHTML = '<option value="">Select State</option>';
+        
+        data.geonames.forEach(state => {
+            let option = document.createElement("option");
+            option.value = state.geonameId; // Use geonameId for cities
+            option.textContent = state.name;
+            stateSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error fetching states:", error);
     }
-  })
 }
-function getCities() {
-  $.ajax({
-    type: 'get',
-    url: 'https://www.universal-tutorial.com/api/cities/' + $('#state').val(),
-    success: function (data) {
-      $('#city').empty();
-      data.forEach((ele) => {
-        $('#city').append(`<option value="${ele.city_name}">${ele.city_name}</option>`);
-      })
-    },
-    error: function (error) {
-      console.log(error);
-    },
-    headers: {
-      "Authorization": "Bearer " + auth_token,
-      "Accept": "application/json"
+
+async function getCities() {
+    let stateGeonameId = document.getElementById("state").value;
+    if (!stateGeonameId) return;
+
+    try {
+        const response = await fetch(`http://api.geonames.org/childrenJSON?geonameId=${stateGeonameId}&username=${GEO_USERNAME}`);
+        const data = await response.json();
+        
+        let citySelect = document.getElementById("city");
+        citySelect.innerHTML = '<option value="">Select City</option>';
+        
+        data.geonames.forEach(city => {
+            let option = document.createElement("option");
+            option.value = city.geonameId;
+            option.textContent = city.name;
+            citySelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error fetching cities:", error);
     }
-  })
 }
+
+// Load countries when page is ready
+document.addEventListener("DOMContentLoaded", getCountries);
+
+
 
 //  **********    **********    Profile Images    **********    **********
 
