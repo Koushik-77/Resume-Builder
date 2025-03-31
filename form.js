@@ -615,3 +615,16 @@ function templateRadioSelector(ele) {
   $(ele).css('background-color', '#80808088');
   $(ele).find('input').prop('checked', true);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
